@@ -1,0 +1,56 @@
+dn: cn=Dorothy Stevens, ou=Alumni Association, ou=People, o=University of Michigan, c=US
+changetype: delete
+
+dn: cn=James A Jones 1, ou=Alumni Association, ou=People, o=University of Michigan, c=US
+changetype: delete
+
+dn: cn=Jane Doe, ou=Alumni Association, ou=People, o=University of Michigan, c=US
+changetype: delete
+
+dn: cn=Jennifer Smith, ou=Alumni Association, ou=People, o=University of Michigan, c=US
+changetype: delete
+
+dn: cn=Mark Elliot, ou=Alumni Association, ou=People, o=University of Michigan, c=US
+changetype: delete
+
+dn: cn=Ursula Hampster, ou=Alumni Association, ou=People, o=University of Michigan, c=US
+changetype: delete
+
+dn: cn=Barbara Jensen, ou=Information Technology Division, ou=People, o=University of Michigan, c=US
+changetype: delete
+
+dn: cn=Bjorn Jensen, ou=Information Technology Division, ou=People, o=University of Michigan, c=US
+changetype: delete
+
+dn: cn=James A Jones 2, ou=Information Technology Division, ou=People, o=University of Michigan, c=US
+changetype: delete
+
+dn: cn=John Doe, ou=Information Technology Division, ou=People, o=University of Michigan, c=US
+changetype: delete
+
+dn: cn=All Staff, ou=Groups, o=University of Michigan, c=US
+changetype: delete
+
+dn: cn=Alumni Assoc Staff, ou=Groups, o=University of Michigan, c=US
+changetype: delete
+
+dn: cn=ITD Staff, ou=Groups, o=University of Michigan, c=US
+changetype: delete
+
+dn: cn=Manager, o=University of Michigan, c=US
+changetype: delete
+
+dn: ou=Alumni Association, ou=People, o=University of Michigan, c=US
+changetype: delete
+
+dn: ou=Information Technology Division, ou=People, o=University of Michigan, c=US
+changetype: delete
+
+dn: ou=People, o=University of Michigan, c=US
+changetype: delete
+
+dn: ou=Groups, o=University of Michigan, c=US
+changetype: delete
+
+dn: o=University of Michigan, c=US
+changetype: delete

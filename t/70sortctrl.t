@@ -26,7 +26,7 @@ my @testcases = (
 );
 
 start_server()
-? plan tests => (4 + scalar(@testcases) * 9)
+? plan tests => (5 + scalar(@testcases) * 9)
 : plan skip_all => 'no server';
 
 
@@ -103,3 +103,6 @@ SKIP: {
     is($dn1, $dn2, 'sort order');
   }
 }
+
+# Cleanup
+ok(ldif_populate($ldap, "data/40-delete.ldif", "delete"), "data/40-delete.ldif");

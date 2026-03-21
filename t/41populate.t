@@ -6,7 +6,7 @@ BEGIN { require "t/common.pl" }
 
 
 start_server()
-? plan tests => 7
+? plan tests => 8
 : plan skip_all => 'no server';
 
 
@@ -24,3 +24,6 @@ $mesg = $ldap->search(base => $BASEDN, filter => 'objectclass=*');
 ok(!$mesg->code, "search: " . $mesg->code . ": " . $mesg->error);
 
 compare_ldif("40",$mesg,$mesg->sorted);
+
+# Cleanup
+ok(ldif_populate($ldap, "data/40-delete.ldif", "delete"), "data/40-delete.ldif");
