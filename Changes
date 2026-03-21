@@ -1,3 +1,14 @@
+0.69 -- not yet released
+
+Enhancements
+* contrib/docker: build from the top of the source tree, so the image
+  uses data/'s schemas and TLS certificate instead of keeping its own
+  duplicate copies of them
+
+Bug Fixes
+* data/openssl.cnf: drop RANDFILE, which OpenSSL 3 no longer accepts
+* data/regenerate_cert.sh: give the test certificate a 10 year lifetime
+
 0.68 -- Sun Jan  3 17:58:18 CET 2021
 
 Enhancements
