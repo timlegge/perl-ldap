@@ -8,6 +8,11 @@ BEGIN {
 
   # fallback for the host to connect - needs to support IPv4 & IPv6
   $HOST     ||= 'localhost';
+  $HOST6    ||= 'ip6-localhost';
+  $PORT     ||= 9009;
+  $SSL_PORT ||= 9010
+      if grep /^ssl$/i, @server_opts and eval { require IO::Socket::SSL; 1};
+
 
   # Where to put temporary files while testing
   # the Makefile is setup to delete temp/ when make clean is run
@@ -18,12 +23,19 @@ BEGIN {
 
   $TESTDB   = "$TEMPDIR/test-db";
   $CONF     = "$TEMPDIR/conf";
+
+  # CA certificate that signed the server's TLS certificate.
+  # The bundled test server uses the self-signed data/cert.pem, so that
+  # doubles as its own CA.  Set to '' to skip certificate verification.
+  $CAFILE   = 'data/cert.pem'  unless defined $CAFILE;
+  # Name to check the server certificate against, if it is not $HOST
+  # (e.g. when connecting over IPv6 or through a port-forward).
+  $SSLSERVER  ||= '';
   $PASSWD   = 'secret';
   $BASEDN   = "o=University of Michigan, c=US";
   $MANAGERDN= "cn=Manager, o=University of Michigan, c=US";
   $JAJDN    = "cn=James A Jones 1, ou=Alumni Association, ou=People, o=University of Michigan, c=US";
   $BABSDN   = "cn=Barbara Jensen, ou=Information Technology Division, ou=People, o=University of Michigan, c=US";
-  $PORT     = 9009;
   @URL      = ();
 
   my @server_opts;
@@ -33,9 +45,6 @@ BEGIN {
     $CONF_IN  = "./data/slapd.conf.in";
     $CONF     = "$TEMPDIR/slapd.conf";
 
-    $SSL_PORT = 9010
-      if grep /^ssl$/i, @server_opts and eval { require IO::Socket::SSL; 1};
-
     ($IPC_SOCK = "$TEMPDIR/ldapi_sock") =~ s,/,%2f,g
       if grep /^ipc$/i, @server_opts;
 
@@ -43,6 +52,7 @@ BEGIN {
       if grep /^sasl$/i, @server_opts and eval { require Authen::SASL; 1 };
 
     push @URL, "ldap://${HOST}:$PORT/";
+    push @URL, "ldap://${HOST6}:$PORT/";
     push @URL, "ldaps://${HOST}:$SSL_PORT/" if $SSL_PORT;
     push @URL, "ldapi://$IPC_SOCK/"         if $IPC_SOCK;
     @LDAPD  = ($SERVER_EXE, '-f', $CONF, '-h', "@URL", qw(-d 1));
@@ -66,6 +76,7 @@ my $pid;
 sub start_server {
   my %arg = (version => 3, @_);
 
+  return 1 if $USE_REMOTE_SERVER eq '1' && !$arg{ipc};
   return 0
     unless ($LDAP_VERSION >= $arg{version}
 	and $LDAPD[0] and -x $LDAPD[0]
@@ -124,6 +135,14 @@ END {
   kill_server();
 }
 
+# TLS options needed to talk to the test server, which presents a
+# self-signed certificate.  Net::LDAP verifies the peer by default.
+sub ssl_opt {
+  return (verify => 'none', @_)  unless $CAFILE;
+  return (verify => 'require', cafile => $CAFILE,
+          $SSLSERVER ? (sslserver => $SSLSERVER) : (), @_);
+}
+
 sub client {
   my %arg = @_;
   my $ldap;
@@ -131,9 +150,10 @@ sub client {
   local $^W = 0;
   my %opt = map { $_ => $arg{$_} } grep { exists($arg{$_}) } qw/inet4 inet6 debug/;
 
+  local $HOST = (defined $opt{inet6} && $opt{inet6} eq "1") ? $HOST6 : $HOST;
   if ($arg{ssl}) {
     require Net::LDAPS;
-    until($ldap = Net::LDAPS->new($HOST, %opt, port => $SSL_PORT, version => 3)) {
+    until($ldap = Net::LDAPS->new($HOST, %opt, ssl_opt(), port => $SSL_PORT, version => 3)) {
       die "ldaps://$HOST:$SSL_PORT/ $@" if ++$count > 10;
       sleep 1;
     }
@@ -147,7 +167,7 @@ sub client {
   }
   elsif ($arg{url}) {
     print "Trying $arg{url}\n";
-    until($ldap = Net::LDAP->new($arg{url}, %opt)) {
+    until($ldap = Net::LDAP->new($arg{url}, %opt, ssl_opt())) {
       die "$arg{url} $@" if ++$count > 10;
       sleep 1;
     }

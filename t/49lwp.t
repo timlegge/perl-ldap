@@ -6,9 +6,37 @@ BEGIN { require "t/common.pl" }
 
 
 start_server()
-? plan tests => 6
+? plan tests => 7
 : plan skip_all => 'no server';
 
+sub sort_results {
+    my $results = shift;
+
+    # 1. Open a virtual filehandle to the string
+    open my $results_fh, "<", \$results or die $!;
+
+    my $ldif = Net::LDAP::LDIF->new($results_fh, "r") or die $!;
+    my @entries;
+    while (not $ldif->eof()) {
+        push @entries, $ldif->read_entry();
+    }
+    $ldif->done();
+    close $results_fh;
+    my @sorted = sort {
+        $a->get_value('cn') cmp $b->get_value('cn')
+    } @entries;
+
+    my $output_results;
+    open my $results_fh, ">", \$output_results or die $!;
+    my $out = Net::LDAP::LDIF->new($results_fh, "w", sort => 1);
+    foreach my $entry (@sorted) {
+        $out->write_entry($entry);
+    }
+    $out->done();
+    close $results_fh;
+    $output_results = "version: 1\n" . $output_results;
+    return $output_results;
+}
 
 SKIP: {
   skip('LWP::UserAgent not installed', 6)
@@ -77,11 +105,14 @@ telephoneNumber: +1 313 555 0355
 LDIF
 
   $res = $ua->get("ldap://${HOST}:$PORT/$BASEDN??sub?(sn=jensen)", Accept => 'text/ldif');
-  is($res->content,$expect,'ldif result');
+  is(sort_results($res->content),sort_results($expect),'ldif result');
 
   $res = $ua->get("ldap://${HOST}:$PORT/$BASEDN??sub?(sn=jensen)?x-format=ldif");
-  is($res->content,$expect,'ldif result');
+  is(sort_results($res->content),sort_results($expect),'ldif result');
 }
+
+# Cleanup
+ok(ldif_populate($ldap, "data/41-delete.ldif", "delete"), "data/41-delete.ldif");
 
 __END__
 

@@ -6,7 +6,7 @@ BEGIN { require "t/common.pl" }
 
 
 start_server()
-? plan tests => scalar(@URL) * 5 + 7
+? plan tests => scalar(@URL) * 5 + 9
 : plan skip_all => 'no server';
 
 
@@ -33,3 +33,7 @@ for my $url (@URL) {
   compare_ldif("40", $mesg, $mesg->sorted);
 }
 
+# Cleanup
+$mesg = $ldap->bind($MANAGERDN, password => $PASSWD);
+ok(!$mesg->code, "bind: " . $mesg->code . ": " . $mesg->error);
+ok(ldif_populate($ldap, "data/40-delete.ldif", "delete"), "data/40-delete.ldif");

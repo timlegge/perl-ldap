@@ -32,15 +32,15 @@ ok(!$mesg->code, "search: " . $mesg->code . ": " . $mesg->error);
 
 compare_ldif("40",$mesg,$mesg->sorted);
 
-
 SKIP: {
   skip('IO::Socket::SSL not installed')
     unless (eval { require IO::Socket::SSL; } );
 
-  $mesg = $ldap->start_tls;
+  # over ldapi:// there is no peer hostname, so name the server explicitly
+  $mesg = $ldap->start_tls(ssl_opt(sslserver => $HOST));
   ok(!$mesg->code, "start_tls: " . $mesg->code . ": " . $mesg->error);
 
-  $mesg = $ldap->start_tls;
+  $mesg = $ldap->start_tls(ssl_opt(sslserver => $HOST));
   ok($mesg->code, "start_tls: " . $mesg->code . ": " . $mesg->error);
 
   $mesg = $ldap->search(base => $BASEDN, filter => 'objectclass=*');
@@ -48,3 +48,4 @@ SKIP: {
 
   compare_ldif("40",$mesg,$mesg->sorted);
 }
+ok(ldif_populate($ldap, "data/40-delete.ldif", "delete"), "data/40-delete.ldif");

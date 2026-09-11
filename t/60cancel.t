@@ -11,7 +11,7 @@ BEGIN { require "t/common.pl" }
 
 
 start_server()
-? plan tests => 7
+? plan tests => 8
 : plan skip_all => 'no server';
 
 
@@ -48,19 +48,28 @@ SKIP: {
   $cancel = $ldap->cancel($search);
   ok($cancel->code, "cancel a finished operation: " . $cancel->code . ": " . $cancel->error);
 
-  # switch to async mode
-  $ldap->async(1);
-
-  # perform a search (asynchronously)
-  $search = $ldap->search(
+  # Attempt to cancel a running search until successful
+  # This should workaround the server being too fast
+  # but still prove that the cancel can work
+  my $code = 1;
+  my $max_attempts = 20;
+  until (!$code && $max_attempts > 0) {
+    diag("Attempting to cancel a running search");
+    # switch to async mode
+    $ldap->async(1);
+    # perform a search (asynchronously)
+    $search = $ldap->search(
                        base     => $BASEDN,
                        filter   => '(objectclass=*)',
                        callback => \&process_entry, # Call this sub for each entry
                      );
 
-  # cancel the running search => should work [may fail, as it depends on the server's speed]
-  $cancel = $ldap->cancel($search);
-  ok(!$cancel->code, "cancel a running operation: " . $cancel->code . ": " . $cancel->error)
+    # cancel the running search => should work [may fail, as it depends on the server's speed]
+    $cancel = $ldap->cancel($search);
+    $code = $cancel->code;
+    $max_attempts--;
+  }
+  ok(!$code, "cancel a running operation: " . $cancel->code . ": " . $cancel->error)
     or diag("This test may have failed because the server was too fast");
 }
 
@@ -73,4 +82,5 @@ sub process_entry
   note($m->mesg_id.':'.$e->dn())  if ($ENV{TEST_VERBOSE} && ref($e));
 }
 
-
+# Cleanup
+ok(ldif_populate($ldap, "data/40-delete.ldif", "delete"), "data/40-delete.ldif");

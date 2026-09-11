@@ -1155,6 +1155,59 @@ the mailing list.
 If you have a patch, please send it as an attachment to the mailing
 list.
 
+=head1 DEVELOPMENT TESTING
+
+A number of the test scripts attempt to test against a ldap server.
+There are two methods a local version of I<slapd> or a ldap server
+running remotely.
+
+=head2 Configuring your ldapserver setings
+
+Here are some commands to setup a custom I<my.cfg> for your testing
+purposes:
+
+    cp test.cfg my.cfg
+
+For a Remote server you will need to enable and configure the
+following settings:
+
+    sed -i "s/^#\$USE_REMOTE_SERVER /\$USE_REMOTE_SERVER /" my.cfg
+    sed -i "s/^#\$HOST /\$HOST /" my.cfg
+    sed -i "s/^#\$HOST6 /\$HOST6 /" my.cfg
+    sed -i "s/^#\$PORT /\$PORT /" my.cfg
+    sed -i "s/^#\$SSL_PORT /\$SSL_PORT /" my.cfg
+
+For a local server you will also need to configure the following
+settings with locations specific for your environment.  The
+following settings were for Ubuntu 24.04.4 LTS.
+
+    sed -i "/SERVER_EXE/s/'<.*>'/'\/usr\/sbin\/slapd'/" my.cfg
+    sed -i "/SLAPD_SCHEMA_DIR/s/''/'data'/" my.cfg
+    sed -i "/SLAPD_MODULE_DIR/s/''/'\/usr\/lib\/ldap\/'/" my.cfg
+
+=head2 local slapd server
+
+Install slapd on your local machine.  B<Note> that Ubuntu and others
+use apparmor or selinux to secure the slapd service.  For Ubuntu
+you can do the following to disable apparmor for slapd. B<This is not
+recommended and may compromise your security.>
+
+    ln -s /etc/apparmor.d/usr.sbin.slapd /etc/apparmor.d/disable/
+    apparmor_parser -R /etc/apparmor.d/usr.sbin.slapd
+
+=head2 remote ldap server
+
+The best solution for this is to run a docker container.  A I<Dockerfile>
+has been provided in I<contrib>.
+
+    docker build -t perl-ldap-docker .
+    docker -p 389:389 -p 636:636 -it --rm perl-ldap-docker:latest
+
+    or
+
+    podman build -t perl-ldap-docker .
+    podman -p 389:389 -p 636:636 -it --rm perl-ldap-docker:latest
+
 =head1 AUTHOR
 
 Graham Barr E<lt>gbarr@pobox.comE<gt>

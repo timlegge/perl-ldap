@@ -1,3 +1,52 @@
+0.69 -- not yet released
+
+This release makes it easier to run the tests against an openLDAP
+server by delivering a Docker build that allows all the tests
+requiring a server to run against the Docker container's slapd.
+See the documentation, in the "DEVELOPMENT TESTING", section for
+the instructions.
+
+To deliver, it we added delete ldif files to cleanup the server's
+data after each test. This is significantly faster than the previous
+approach of starting a local ldap service for each test. The local
+approach is still supported.
+
+Enhancements
+* contrib/docker/Dockerfile: provide an openLDAP server for testing
+* contrib/docker/entrypoint.sh: Docker container startup script
+* contrib/docker/README.md: Document the Docker container
+* data/40-delete-73.ldif: delete data populated by t/73assert.t
+* data/40-delete.ldif: delete data populated by t/41-populate.t
+* data/41-delete.ldif: delete data populated by t/42search.t
+* data/42-delete.ldif: delete data populated by t/43modify.t
+* lib/Net/LDAP.pod: Add DEVELOPMENT TESTING section
+* t/41populate.t: add data/40-delete.ldif test
+* t/42search.t: add data/41-delete.ldif test
+* t/43modify.t: add data/42-delete.ldif test
+* t/46ssl.t: add data/40-delete.ldif test and pass ssl_opt()
+* t/47ipc.t: add data/40-delete.ldif test and pass ssl_opt()
+* t/48url.t: add data/40-delete.ldif test
+* t/49lwp.t: add data/41-delete.ldif test
+* t/60cancel.t: add data/40-delete.ldif test
+* t/70sortctrl.t: add data/40-delete.ldif test
+* t/71preread.t: add data/40-delete.ldif test
+* t/72postread.t: add data/40-delete.ldif test
+* t/73assert.t: add data/40-delete-73.ldif test
+* t/74matchedvalues.t: add data/40-delete.ldif test
+* t/common.pl: set ssl_opt to allow self-signed cert to verify
+* .dockerignore: ignore file for Docker container
+* test.cfg: Additional options for testing against LDAP server
+
+Bug Fixes
+* data/cert.pem: regenerated with a 10 year life
+* data/key.pem: new key for 10 year cert
+* data/openssl.cnf: drop RANDFILE, which OpenSSL 3 no longer accepts
+* data/regenerate_cert.sh: give the test certificate a 10 year lifetime
+* t/49lwp.t: sort the ldif results received from the server and
+expected results to ensure the test can pass if the data is the same
+* t/60cancel.t: attempt to cancel query multiple times to catch
+a successful cancellation - timing issues
+
 0.68 -- Sun Jan  3 17:58:18 CET 2021
 
 Enhancements

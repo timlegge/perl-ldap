@@ -24,7 +24,7 @@ my @tests;
 }
 
 start_server()
-? plan tests => 4 + 3 * scalar(@tests)
+? plan tests => 5 + 3 * scalar(@tests)
 : plan skip_all => 'no server';
 
 
@@ -70,6 +70,8 @@ SKIP: {
   }
 }
 
+# Cleanup
+ok(ldif_populate($ldap, "data/40-delete.ldif", "delete"), "data/40-delete.ldif");
 __DATA__
 
 ## each section below represents one test; logic similar to , structure similar to LDIF

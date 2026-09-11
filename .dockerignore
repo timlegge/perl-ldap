@@ -1,0 +1,14 @@
+# Build context for contrib/docker/Dockerfile is the top of the source tree,
+# but the image only needs data/ and contrib/docker/.
+.git
+blib
+temp
+_test
+Makefile
+pm_to_blib
+my.cfg
+MYMETA.*
+*.bak
+*.old
+*.rej
+*.orig

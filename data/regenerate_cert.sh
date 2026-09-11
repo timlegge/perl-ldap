@@ -10,7 +10,7 @@ if [ -e openssl.cnf ]; then
 		-new -x509 \
 		-key key.pem \
 		-out cert.pem \
-		-days 365 \
+		-days 3650 \
 		-subj /domainComponent=perl-ldap/domainComponent=demo/commonName=localhost 
 fi
 
